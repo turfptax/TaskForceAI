@@ -1,5 +1,5 @@
 # voice_assistant.py
-
+import pyttsx3
 import pygame
 import wave
 import json
@@ -12,14 +12,10 @@ from pydub.effects import speedup
 import json
 import subprocess
 
+keyphrase = "question"
+model_path = "../vosk-model-small"
 
-
-
-def change_speed_and_pitch(input_file, output_file, speed_factor, pitch_factor):
-    batch_file = "ffmpeg_run.bat"
-    subprocess.run([batch_file, input_file, str(speed_factor), str(pitch_factor), output_file], check=True)
-
-def recognize_speech_vosk(model_path, keyphrase="hey assistant"):
+def recognize_speech_vosk(model_path, keyphrase=keyphrase):
     model = Model(model_path)
     recognizer = KaldiRecognizer(model, 16000)
     p = pyaudio.PyAudio()
@@ -42,9 +38,19 @@ def recognize_speech_vosk(model_path, keyphrase="hey assistant"):
             partial_result = json.loads(recognizer.PartialResult())
             print(f"Partial: {partial_result['partial']}")
 
-def text_to_speech(text, lang="en", filename="output.mp3"):
-    tts = gTTS(text=text, lang=lang)
-    tts.save(filename)
+def text_to_speech(text, lang="en-gb"):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.startLoop(False)
+    result = ''
+    while True:
+        if 'stop' in result:
+            engine.stop()
+            break
+        if not engine.isBusy():
+            break
+        engine.iterate()
+    engine.endLoop()
 
 def play_audio(filename):
     pygame.mixer.init()
@@ -54,7 +60,7 @@ def play_audio(filename):
         pygame.time.Clock().tick(10)
     pygame.mixer.quit()
 
-def wait_for_keyphrase(model_path, keyphrase="hey assistant"):
+def wait_for_keyphrase(model_path, keyphrase=keyphrase):
     model = Model(model_path)
     recognizer = KaldiRecognizer(model, 16000)
     p = pyaudio.PyAudio()
