@@ -1,6 +1,9 @@
 # Ignore config.py file (contains API keys and other sensitive information)
 config.py
 
+# Ignore messages.txt file (contains API keys and other sensitive information)
+messages.txt
+
 # Ignore virtual environment files
 venv/
 

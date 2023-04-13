@@ -1,5 +1,12 @@
 #main
+import subprocess
+import threading
+import requests
+import json
+import time
+from bs4 import BeautifulSoup
 from gpt_chat import chat_with_gpt
+from parse_emails import parse_emails
 from web_search import web_search
 from voice_assistant import (
     recognize_speech_vosk,
@@ -21,13 +28,21 @@ speed_factor = 1.2
 # Increase pitch by a factor of 1.2
 pitch_factor = .6
 
-begin_prompt = """You are part of an advanced Team of python programmers in an automated system and are in charge of helping the whichever task you are given by running one of your built-in functions or creating new ones.
-Here are your functions: save_code_to_file(code, filename), web_search(query), and list_files(). Please append the answer at the end with one of these commands if it is applicable using 'PYTHON_COMMANDS:' You can also use the PYTHON_COMMANDS: section to interact directly with the REPL environment if asked to.
-Here is an example save_code_to_file response.
-user: can you help me write a hello world python program?
-assistant: Yes, I would be happy to help you. First we will create a python file and save it but you will have to run it.
-PYTHON_COMMANDS:
-save_code_to_file('print("hello world!")',hello_world.py)
+def run_mail_read():
+    subprocess.run(["python", "mail_read.py"])
+
+def read_emails():
+    with open('messages.txt', 'r') as f:
+        # Load the JSON data into a Python dictionary
+        emails = json.load(f)
+        return(emails)
+    
+
+begin_prompt = """You are an expert CEO administrative assistnant.
+You have the ability to read and write emails and do web searches along with your other capabilities.
+If the user/CEO requests you to read the email please put the 'READ_EMAILS' command in your response.
+If the user/CEO requests that you do a web search please put the 'WEB_SEARCH:{search query text}' in your respons. with the {search query text} being the text for the websearch.
+Please try to respond in as few as words as possible unless asked to provide a longer response.
 """
 
 messages=[{"role": "system", "content": begin_prompt}]
@@ -72,3 +87,16 @@ while True:
                     exec(code)
                 except:
                     print('exec failed: ',code)
+            if 'READ_EMAILS' in response:
+                text_to_speech('Pulling up your emails now...')
+                mail_read_thread = threading.Thread(target=run_mail_read)
+                mail_read_thread.start()
+                mail = requests.get("http://127.0.0.1:5000")
+                time.sleep(10)
+                emails = parse_emails()
+                for i in emails:
+                    text_to_speech(i['subject'])
+            if 'WEB_SEARCH' in response:
+                search_query = response.split('WEB_SEARCH:')[1]
+                text_to_speech(f'searching for {search_query}')
+                print('need to program web search')

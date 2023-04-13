@@ -20,6 +20,7 @@ def index():
 
 @app.route("/callback")
 def callback():
+    print("Callback function executed")
     code = request.args.get("code")
     result = msal_app.acquire_token_by_authorization_code(code, scopes, redirect_uri="http://localhost:5000/callback")
 
@@ -31,11 +32,14 @@ def callback():
             "odata-version": "4.0"}
 
         messages_url = "https://graph.microsoft.com/v1.0/me/messages"
+        print('getting response')
         response = requests.get(messages_url, headers=headers)
 
         if response.status_code == 200:
+            print('response returned 200 - this is good')
             messages = response.json()["value"]
             # Save messages to a file
+            print('saving messages')
             with open("messages.txt", "w") as file:
                 for message in messages:
                     file.write(json.dumps(message, indent=4))
@@ -47,4 +51,4 @@ def callback():
         return "Error acquiring token"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
