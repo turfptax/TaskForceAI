@@ -1,0 +1,10 @@
+# Ignore config.py file (contains API keys and other sensitive information)
+config.py
+
+# Ignore virtual environment files
+venv/
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
