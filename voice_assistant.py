@@ -36,7 +36,7 @@ def recognize_speech_vosk(model_path, keyphrase=keyphrase):
                 return result['text']
         else:
             partial_result = json.loads(recognizer.PartialResult())
-            print(f"Partial: {partial_result['partial']}")
+            print(f"Partial: {partial_result['partial']} \r")
 
 def text_to_speech(text, lang="en-gb"):
     engine = pyttsx3.init()
