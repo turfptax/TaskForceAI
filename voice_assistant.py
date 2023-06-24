@@ -11,11 +11,19 @@ from pydub.playback import play
 from pydub.effects import speedup
 import json
 import subprocess
+from colorama import init, Cursor
+init()
+import sys
 
 keyphrase = "question"
 model_path = "../vosk-model-small"
 
+def clear_line():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sys.stdout.write("\033[F")  # Move the cursor one line up
+
 def recognize_speech_vosk(model_path, keyphrase=keyphrase):
+    last_partial = ''
     model = Model(model_path)
     recognizer = KaldiRecognizer(model, 16000)
     p = pyaudio.PyAudio()
@@ -36,7 +44,8 @@ def recognize_speech_vosk(model_path, keyphrase=keyphrase):
                 return result['text']
         else:
             partial_result = json.loads(recognizer.PartialResult())
-            print(f"Partial: {partial_result['partial']} \r")
+            sys.stdout.write(f"still-talking-deteced:{partial_result['partial']}\r")
+            sys.stdout.flush()
 
 def text_to_speech(text, lang="en-gb"):
     engine = pyttsx3.init()
@@ -81,7 +90,8 @@ def wait_for_keyphrase(model_path, keyphrase=keyphrase):
                 return True
         else:
             partial_result = json.loads(recognizer.PartialResult())
-            print(f"Partial: {partial_result['partial']}")
+            sys.stdout.write(f"still-talking-deteced:{partial_result['partial']}\r")
+            sys.stdout.flush()
 
 def get_user_input(model_path):
     model = Model(model_path)
